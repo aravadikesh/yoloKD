@@ -69,7 +69,7 @@ import os
 from PIL import Image
 
 # Load the VOC.yaml file to read dataset paths and configuration
-yaml_path = "/mnt/data/VOC.yaml"
+yaml_path = "VOC.yaml"
 with open(yaml_path, 'r') as f:
     voc_config = yaml.safe_load(f)
 
