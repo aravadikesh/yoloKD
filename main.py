@@ -5,9 +5,8 @@ from ultralytics import YOLO
 import yaml
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from torchvision.datasets import VOCDetection
+from torchvision.datasets import CIFAR10
 import os
-from PIL import Image
 import copy
 
 # 1. Load Teacher and Student Models
@@ -93,40 +92,15 @@ def train_student_with_distillation(teacher_model, student_model, dataloader, nu
         self_distiller.update_pseudo_teacher()  # Update pseudo-teacher
         print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(dataloader):.4f}")
 
-# 4. Prepare the Dataset and DataLoader with VOC.yaml configuration
-yaml_path = "VOC.yaml"
-with open(yaml_path, 'r') as f:
-    voc_config = yaml.safe_load(f)
-
-voc_root = voc_config['path']
-train_list = os.path.join(voc_root, voc_config['train'])
-num_classes = voc_config['nc']
-
+# 4. Prepare CIFAR-10 Dataset and DataLoader
 transform = transforms.Compose([
-    transforms.Resize((640, 640)),
+    transforms.Resize((640, 640)),  # Resize CIFAR-10 to YOLO's input size
     transforms.ToTensor()
 ])
 
-class CustomVOCDataset(VOCDetection):
-    def __init__(self, root, image_set, transform=None):
-        super(CustomVOCDataset, self).__init__(root, year="2012", image_set=image_set, transform=transform)
-        with open(image_set, 'r') as f:
-            self.image_paths = [os.path.join(root, 'JPEGImages', line.strip() + '.jpg') for line in f]
-        self.transform = transform
-
-    def __getitem__(self, idx):
-        img_path = self.image_paths[idx]
-        image = Image.open(img_path).convert("RGB")
-        if self.transform:
-            image = self.transform(image)
-        target = []
-        return image, target
-
-    def __len__(self):
-        return len(self.image_paths)
-
-train_dataset = CustomVOCDataset(root=voc_root, image_set=train_list, transform=transform)
-train_dataloader = DataLoader(train_dataset, batch_size=8, shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
+# Download and load CIFAR-10 dataset
+train_dataset = CIFAR10(root="./data", train=True, download=True, transform=transform)
+train_dataloader = DataLoader(train_dataset, batch_size=8, shuffle=True)
 
 # Execute Training
 train_student_with_distillation(teacher_model, student_model, train_dataloader, num_epochs=10, alpha=0.5)
