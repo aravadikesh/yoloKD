@@ -1,0 +1,731 @@
+[
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 16,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.35
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 16,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.3
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 16,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.6
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 16,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.27
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 16,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.18
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 16,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.11
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 16,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.1
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 16,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.51
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 16,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.31
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 32,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.29
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 32,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.17
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 32,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.16
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 32,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.38
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 32,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.3
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 32,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.37
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 32,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.09
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 32,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.86
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 32,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 77.02
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 64,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 76.72
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 64,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.52
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 64,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 77.7
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 64,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.05
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 64,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.1
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 64,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 78.26
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 64,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 76.81
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 64,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.21
+    },
+    {
+        "params": {
+            "alpha": 0.3,
+            "batch_size": 64,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 77.96
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 16,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.24
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 16,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.0
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 16,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.68
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 16,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.28
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 16,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.49
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 16,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 75.6
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 16,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.16
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 16,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.95
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 16,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 75.71
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 32,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.21
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 32,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.1
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 32,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.8
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 32,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.9
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 32,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.96
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 32,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.9
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 32,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.75
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 32,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.08
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 32,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.18
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 64,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.4
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 64,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.08
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 64,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 77.72
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 64,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.39
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 64,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.1
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 64,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 77.74
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 64,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 76.73
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 64,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.35
+    },
+    {
+        "params": {
+            "alpha": 0.5,
+            "batch_size": 64,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 77.47
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 16,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.8
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 16,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.73
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 16,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 72.03
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 16,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.84
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 16,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 76.58
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 16,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 72.34
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 16,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.27
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 16,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.39
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 16,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 72.02
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 32,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.98
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 32,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.12
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 32,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.69
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 32,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.71
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 32,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.41
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 32,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.0
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 32,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.9
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 32,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.98
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 32,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 75.98
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 64,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.57
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 64,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 78.2
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 64,
+            "initial_temperature": 3.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 75.73
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 64,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.0
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 64,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.73
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 64,
+            "initial_temperature": 5.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.14
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 64,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.0001
+        },
+        "accuracy": 77.44
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 64,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.001
+        },
+        "accuracy": 77.58
+    },
+    {
+        "params": {
+            "alpha": 0.7,
+            "batch_size": 64,
+            "initial_temperature": 7.0,
+            "learning_rate": 0.01
+        },
+        "accuracy": 76.9
+    }
+]

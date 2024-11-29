@@ -6,6 +6,9 @@ from torch.utils.data import DataLoader
 from torchvision import transforms, datasets
 from modify_and_train import modify_model_for_cifar10
 import copy
+from sklearn.model_selection import ParameterGrid
+import json
+from datetime import datetime
 
 # Load teacher and student models from CIFAR-10 trained checkpoints
 teacher_model = YOLO("yolov8l-cls.pt").model  # Base architecture
@@ -58,21 +61,21 @@ class DistillationLoss(nn.Module):
         return (1 - self.alpha) * student_loss + self.alpha * distillation_loss
 
 # Self-distillation Wrapper for student model
-class SelfDistillationWrapper:
-    def __init__(self, student_model, alpha=0.3):
-        self.student = student_model
-        self.pseudo_teacher = copy.deepcopy(student_model)
-        self.alpha = alpha
+# class SelfDistillationWrapper:
+#     def __init__(self, student_model, alpha=0.3):
+#         self.student = student_model
+#         self.pseudo_teacher = copy.deepcopy(student_model)
+#         self.alpha = alpha
     
-    def update_pseudo_teacher(self):
-        self.pseudo_teacher.load_state_dict(self.student.state_dict())
+#     def update_pseudo_teacher(self):
+#         self.pseudo_teacher.load_state_dict(self.student.state_dict())
 
-    def self_distillation_loss(self, student_logits, pseudo_teacher_logits):
-        return torch.nn.functional.kl_div(
-            torch.nn.functional.log_softmax(student_logits, dim=-1),
-            torch.nn.functional.softmax(pseudo_teacher_logits, dim=-1),
-            reduction="batchmean"
-        )
+#     def self_distillation_loss(self, student_logits, pseudo_teacher_logits):
+#         return torch.nn.functional.kl_div(
+#             torch.nn.functional.log_softmax(student_logits, dim=-1),
+#             torch.nn.functional.softmax(pseudo_teacher_logits, dim=-1),
+#             reduction="batchmean"
+#         )
 
 def model_forward(model, x):
     """Wrapper to handle YOLO model outputs"""
@@ -81,15 +84,114 @@ def model_forward(model, x):
         output = output[0]
     return output
 
+def validate_model(model, val_loader, criterion, device):
+    """Validate model performance"""
+    model.eval()
+    val_loss = 0
+    correct = 0
+    total = 0
+    
+    with torch.no_grad():
+        for images, labels in val_loader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            _, predicted = outputs.max(1)
+            total += labels.size(0)
+            correct += predicted.eq(labels).sum().item()
+            
+    accuracy = 100. * correct / total
+    return accuracy
+
+def grid_search_distillation(teacher_model, base_student_model, train_subset, val_subset, device, num_epochs=3):
+    """Perform grid search for best hyperparameters"""
+    param_grid = {
+        'alpha': [0.3, 0.5, 0.7],
+        'initial_temperature': [3.0, 5.0, 7.0],
+        'learning_rate': [0.0001, 0.001, 0.01],
+        'batch_size': [16, 32, 64]
+    }
+    
+    results = []
+    best_accuracy = 0
+    best_params = None
+    
+    for params in ParameterGrid(param_grid):
+        print(f"\nTrying parameters: {params}")
+
+        # Prepare DataLoaders
+        train_loader = DataLoader(train_subset, batch_size=params['batch_size'], shuffle=True)
+        val_loader = DataLoader(val_subset, batch_size=params['batch_size'], shuffle=False)
+        
+        # Reset student model
+        student_model = copy.deepcopy(base_student_model)
+        student_model.train()
+        
+        # Training with current parameters
+        criterion = DistillationLoss(alpha=params['alpha'], 
+                                   temperature=params['initial_temperature'])
+        optimizer = optim.Adam(student_model.parameters(), lr=params['learning_rate'])
+        
+        # Quick training (reduced epochs for grid search)
+        for epoch in range(num_epochs):
+            running_loss = 0.0
+            for  i, (images, labels) in enumerate(train_loader):
+                images, labels = images.to(device), labels.to(device)
+                
+                with torch.no_grad():
+                    teacher_logits = model_forward(teacher_model, images)
+                
+                student_logits = model_forward(student_model, images)
+                student_loss = nn.CrossEntropyLoss()(student_logits, labels)
+                
+                loss = criterion(student_logits, teacher_logits.detach(), 
+                               labels, student_loss)
+                
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                running_loss += loss.item()
+
+                if i % 100 == 0:
+                    print(f"Epoch [{epoch + 1}/{num_epochs}], Batch [{i}/{len(train_loader)}], "
+                        f"Loss: {loss.item():.4f}")
+        
+        # Validate
+        accuracy = validate_model(student_model, val_loader, criterion, device)
+        
+        results.append({
+            'params': params,
+            'accuracy': accuracy
+        })
+        
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_params = params
+            
+        print(f"Validation Accuracy: {accuracy:.2f}%")
+    
+    # Save results
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    with open(f'grid_search_results_{timestamp}.json', 'w') as f:
+        json.dump(results, f, indent=4)
+    
+    print("\nBest parameters found:")
+    print(json.dumps(best_params, indent=4))
+    print(f"Best validation accuracy: {best_accuracy:.2f}%")
+    
+    return best_params
+
 # In main.py
-def train_student_with_distillation(teacher_model, student_model, dataloader, num_epochs=10, alpha=0.5, initial_temperature=5.0):
+def train_student_with_distillation(teacher_model, student_model, dataset, num_epochs=10, alpha=0.5, initial_temperature=5.0, learning_rate=0.001, batch_size=32):
+    # Prepare DataLoader
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
     # Load pretrained teacher model
     teacher_checkpoint = torch.load('trained_models/best_yolov8l_cifar10.pth')
     teacher_model.load_state_dict(teacher_checkpoint['model_state_dict'])
     teacher_model.eval()
     
     criterion = DistillationLoss(alpha=alpha, temperature=initial_temperature)
-    optimizer = optim.Adam(student_model.parameters(), lr=0.001)
+    optimizer = optim.Adam(student_model.parameters(), lr=learning_rate)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=2)
     
     for epoch in range(num_epochs):
@@ -138,14 +240,47 @@ transform = transforms.Compose([
 
 # Download and load CIFAR-10 dataset
 train_dataset = datasets.CIFAR10(root="./data", train=True, download=True, transform=transform)
-train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
-# Execute Training
+# Prepare validation set
+dataset_size = len(train_dataset)
+train_size = int(0.8 * dataset_size)
+val_size = dataset_size - train_size
+train_subset, val_subset = torch.utils.data.random_split(
+    train_dataset, [train_size, val_size]
+)
+
+# Perform grid search
+best_params = grid_search_distillation(
+    teacher_model, 
+    student_model,
+    train_subset,
+    val_subset,
+    device
+)
+
+# Update training parameters with best found
+alpha = best_params['alpha']
+initial_temperature = best_params['initial_temperature']
+learning_rate = best_params['learning_rate']
+batch_size = best_params['batch_size']
+
+# Execute training with best parameters
 train_student_with_distillation(
     teacher_model=teacher_model,
     student_model=student_model, 
-    dataloader=train_dataloader,
+    dataset=train_dataset,
     num_epochs=10,
-    alpha=0.5,
-    initial_temperature=5.0
+    alpha=alpha,
+    initial_temperature=initial_temperature,
+    batch_size=best_params['batch_size'],
 )
+
+# # Execute Training
+# train_student_with_distillation(
+#     teacher_model=teacher_model,
+#     student_model=student_model, 
+#     dataloader=train_dataloader,
+#     num_epochs=10,
+#     alpha=0.5,
+#     initial_temperature=5.0
+# )
