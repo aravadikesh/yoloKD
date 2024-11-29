@@ -1,0 +1,67 @@
+Evaluating YOLOv8Large...
+Test Accuracy: 0.8467
+Average Inference Time: 0.0130 seconds
+
+Classification Report:
+              precision    recall  f1-score   support
+
+    airplane       0.82      0.88      0.85      1000
+  automobile       0.93      0.91      0.92      1000
+        bird       0.85      0.79      0.82      1000
+         cat       0.71      0.71      0.71      1000
+        deer       0.83      0.85      0.84      1000
+         dog       0.77      0.79      0.78      1000
+        frog       0.86      0.89      0.87      1000
+       horse       0.91      0.86      0.88      1000
+        ship       0.90      0.89      0.90      1000
+       truck       0.91      0.90      0.90      1000
+
+    accuracy                           0.85     10000
+   macro avg       0.85      0.85      0.85     10000
+weighted avg       0.85      0.85      0.85     10000
+
+
+Evaluating YOLOv8Nano...
+Test Accuracy: 0.7504
+Average Inference Time: 0.0065 seconds
+
+Classification Report:
+              precision    recall  f1-score   support
+
+    airplane       0.76      0.79      0.78      1000
+  automobile       0.83      0.88      0.85      1000
+        bird       0.72      0.61      0.66      1000
+         cat       0.58      0.61      0.59      1000
+        deer       0.73      0.67      0.70      1000
+         dog       0.70      0.69      0.69      1000
+        frog       0.76      0.84      0.79      1000
+       horse       0.76      0.77      0.76      1000
+        ship       0.83      0.81      0.82      1000
+       truck       0.83      0.85      0.84      1000
+
+    accuracy                           0.75     10000
+   macro avg       0.75      0.75      0.75     10000
+weighted avg       0.75      0.75      0.75     10000
+
+
+Evaluating Distilled-Nano...
+Test Accuracy: 0.7896
+Average Inference Time: 0.0057 seconds
+
+Classification Report:
+              precision    recall  f1-score   support
+
+    airplane       0.77      0.83      0.80      1000
+  automobile       0.87      0.90      0.88      1000
+        bird       0.78      0.68      0.72      1000
+         cat       0.65      0.65      0.65      1000
+        deer       0.75      0.74      0.75      1000
+         dog       0.74      0.71      0.72      1000
+        frog       0.79      0.87      0.83      1000
+       horse       0.82      0.80      0.81      1000
+        ship       0.86      0.84      0.85      1000
+       truck       0.87      0.88      0.87      1000
+
+    accuracy                           0.79     10000
+   macro avg       0.79      0.79      0.79     10000
+weighted avg       0.79      0.79      0.79     10000
