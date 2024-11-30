@@ -7,39 +7,6 @@ import torch.nn as nn
 import os
 import argparse
 
-def modify_model_for_cifar10(model, debug=False):
-    """Modified version to handle YOLOv8 cls model structure"""
-    if hasattr(model, 'model'):
-        backbone = model.model[:-1]        
-        # Get number of features from cv2 of C2f layer
-        num_features = backbone[-1].cv2.conv.out_channels
-
-        if debug:
-            print(f"Last backbone layer type: {type(backbone[-1]).__name__}")
-        
-            # Debug layer structure
-            def print_layer_info(layer, prefix=''):
-                for name, module in layer.named_children():
-                    print(f"{prefix}Layer: {name}, Type: {type(module).__name__}")
-                    if hasattr(module, 'conv') and hasattr(module.conv, 'out_channels'):
-                        print(f"{prefix}  out_channels: {module.conv.out_channels}")
-                    print_layer_info(module, prefix + '  ')
-        
-            print("Analyzing backbone structure:")
-            print_layer_info(backbone[-1])
-            print(f"Number of features detected: {num_features}")
-        
-        # Create model with correct feature dimensions
-        return nn.Sequential(
-            backbone,  # Keep backbone as is
-            nn.AdaptiveAvgPool2d(1),
-            nn.Flatten(),
-            nn.Dropout(0.2),
-            nn.Linear(num_features, 10)
-        )
-    
-    return model
-
 def modify_model_for_dataset(model, num_classes, debug=False):
     """Modify model for specific dataset"""
     if hasattr(model, 'model'):
@@ -77,7 +44,7 @@ def train_model(model, train_loader, val_loader, model_type, dataset_name='cifar
         correct = 0
         total = 0
         
-        for images, labels in train_loader:
+        for i, (images, labels) in enumerate(train_loader):
             images, labels = images.to(device), labels.to(device)
             
             optimizer.zero_grad()
@@ -90,6 +57,10 @@ def train_model(model, train_loader, val_loader, model_type, dataset_name='cifar
             _, predicted = outputs.max(1)
             total += labels.size(0)
             correct += predicted.eq(labels).sum().item()
+            
+            if i % 1000 == 0:
+                print(f"Epoch [{epoch + 1}/{num_epochs}], Batch [{i}/{len(train_loader)}], "
+                        f"Loss: {loss.item():.4f}")
         
         train_acc = 100. * correct / total
         train_loss = running_loss / len(train_loader)
@@ -140,6 +111,8 @@ def get_num_classes(dataset_name='cifar10'):
         return 10
     elif dataset_name.lower() == 'pets':
         return 37
+    elif dataset_name.lower() == 'tiny-imagenet':
+        return 200
     return 10
 
 def get_dataset(dataset_name='cifar10'):
@@ -169,6 +142,40 @@ def get_dataset(dataset_name='cifar10'):
         )
         num_classes = 37  # 37 pet breeds
         
+    elif dataset_name.lower() == 'tiny-imagenet':        
+        # Restructure validation data
+        tiny_imagenet_path = './data/tiny-imagenet-200'
+        train_dir = os.path.join(tiny_imagenet_path, 'train')
+        val_dir = os.path.join(tiny_imagenet_path, 'val')
+        
+        # Create proper validation structure
+        if not os.path.exists(os.path.join(val_dir, 'images')):
+            print("Restructuring validation data...")
+            val_annotations_file = os.path.join(val_dir, 'val_annotations.txt')
+            
+            # Read annotations
+            with open(val_annotations_file, 'r') as f:
+                val_annotations = f.readlines()
+            
+            # Create class directories
+            for line in val_annotations:
+                parts = line.strip().split('\t')
+                img_name, class_id = parts[0], parts[1]
+                
+                # Make class directory
+                class_dir = os.path.join(val_dir, class_id)
+                os.makedirs(class_dir, exist_ok=True)
+                
+                # Move image to class directory
+                old_img_path = os.path.join(val_dir, 'images', img_name)
+                new_img_path = os.path.join(class_dir, img_name)
+                if os.path.exists(old_img_path):
+                    os.rename(old_img_path, new_img_path)
+        
+        train_dataset = datasets.ImageFolder(train_dir, transform=transform)
+        val_dataset = datasets.ImageFolder(val_dir, transform=transform)
+        num_classes = 200
+        
     return train_dataset, val_dataset, num_classes
 
 def main():
@@ -177,7 +184,7 @@ def main():
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, default='cifar10',
-                       choices=['cifar10', 'pets'])
+                       choices=['cifar10', 'pets', 'tiny-imagenet'])
     args = parser.parse_args()
     
     # Load dataset
