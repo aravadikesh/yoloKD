@@ -4,7 +4,7 @@ import torch.optim as optim
 from ultralytics import YOLO
 from torch.utils.data import DataLoader
 from torchvision import transforms, datasets
-from modify_and_train import get_dataset, modify_model_for_cifar10, modify_model_for_dataset
+from modify_and_train import get_dataset, modify_model_for_dataset
 import copy
 from sklearn.model_selection import ParameterGrid
 import json
@@ -85,7 +85,7 @@ def grid_search_distillation(teacher_model, base_student_model, train_subset, va
         'alpha': [0.3, 0.5, 0.7],
         'initial_temperature': [3.0, 5.0, 7.0],
         'learning_rate': [0.0001, 0.001, 0.01],
-        'batch_size': [16, 32, 64]
+        'batch_size': [64] # only use one size batch for now
     }
     
     results = []
@@ -208,7 +208,7 @@ def train_student_with_distillation(teacher_model, student_model, dataset, num_e
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, default='cifar10',
-                       choices=['cifar10', 'pets'])
+                       choices=['cifar10', 'pets', 'tiny-imagenet'])
     args = parser.parse_args()
 
     # Load dataset
@@ -234,14 +234,15 @@ def main():
     teacher_model = teacher_model.to(device)
     student_model = student_model.to(device)
 
-    # 4. Prepare CIFAR-10 Dataset and DataLoader
+    # Generic image transformations
     transform = transforms.Compose([
-        transforms.Resize((224, 224)),  # More reasonable size for classification
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                           std=[0.229, 0.224, 0.225])
     ])
 
-    # Prepare validation set
+    # Prepare train/val split
     dataset_size = len(train_dataset)
     train_size = int(0.8 * dataset_size)
     val_size = dataset_size - train_size
@@ -249,44 +250,44 @@ def main():
         train_dataset, [train_size, val_size]
     )
 
-    # # Perform grid search
-    # best_params = grid_search_distillation(
-    #     teacher_model, 
-    #     student_model,
-    #     train_subset,
-    #     val_subset,
-    #     device
-    # )
+    # Perform grid search
+    best_params = grid_search_distillation(
+        teacher_model, 
+        student_model,
+        train_subset,
+        val_subset,
+        device
+    )
 
-    # # Update training parameters with best found
-    # alpha = best_params['alpha']
-    # initial_temperature = best_params['initial_temperature']
-    # learning_rate = best_params['learning_rate']
-    # batch_size = best_params['batch_size']
+    # Update training parameters with best found
+    alpha = best_params['alpha']
+    initial_temperature = best_params['initial_temperature']
+    learning_rate = best_params['learning_rate']
+    batch_size = best_params['batch_size']
 
-    # # Execute training with best parameters
-    # train_student_with_distillation(
-    #     teacher_model=teacher_model,
-    #     student_model=student_model, 
-    #     dataset=train_dataset,
-    #     num_epochs=10,
-    #     alpha=alpha,
-    #     initial_temperature=initial_temperature,
-    #     learning_rate=learning_rate,
-    #     batch_size=batch_size,
-    # )
-
-    # Execute Training
-    student_model = train_student_with_distillation(
+    # Execute training with best parameters
+    train_student_with_distillation(
         teacher_model=teacher_model,
         student_model=student_model, 
         dataset=train_dataset,
         num_epochs=10,
-        alpha=1,
-        initial_temperature=3.0,
-        learning_rate=0.001,
-        batch_size=32,
+        alpha=alpha,
+        initial_temperature=initial_temperature,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
     )
+
+    # # Execute Training
+    # student_model = train_student_with_distillation(
+    #     teacher_model=teacher_model,
+    #     student_model=student_model, 
+    #     dataset=train_dataset,
+    #     num_epochs=10,
+    #     alpha=0.3,
+    #     initial_temperature=3.0,
+    #     learning_rate=0.001,
+    #     batch_size=32,
+    # )
 
     # Save final distilled model
     torch.save(student_model.state_dict(), f'distilled_yolov8n_{args.dataset}.pth')

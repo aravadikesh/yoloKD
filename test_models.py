@@ -78,7 +78,7 @@ def load_distilled_model(dataset_name, device):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, default='cifar10',
-                       choices=['cifar10', 'pets'])
+                       choices=['cifar10', 'pets', 'tiny-imagenet'])
     args = parser.parse_args()
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
