@@ -4,35 +4,12 @@ import torch.optim as optim
 from ultralytics import YOLO
 from torch.utils.data import DataLoader
 from torchvision import transforms, datasets
-from modify_and_train import modify_model_for_cifar10
+from modify_and_train import get_dataset, modify_model_for_cifar10, modify_model_for_dataset
 import copy
 from sklearn.model_selection import ParameterGrid
 import json
 from datetime import datetime
-
-# Load teacher and student models from CIFAR-10 trained checkpoints
-teacher_model = YOLO("yolov8l-cls.pt").model  # Base architecture
-student_model = YOLO("yolov8n-cls.pt").model  # Base architecture
-
-# Modify models for CIFAR-10
-teacher_model = modify_model_for_cifar10(teacher_model)
-student_model = modify_model_for_cifar10(student_model)
-
-# Load trained CIFAR-10 weights
-teacher_checkpoint = torch.load('trained_models/best_yolov8l_cifar10.pth')
-student_checkpoint = torch.load('trained_models/best_yolov8n_cifar10.pth')
-
-teacher_model.load_state_dict(teacher_checkpoint['model_state_dict'])
-student_model.load_state_dict(student_checkpoint['model_state_dict'])
-
-# Set model modes
-teacher_model = teacher_model.eval()  # Teacher in eval mode
-student_model = student_model.train()  # Student in training mode
-
-# Move to device
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-teacher_model = teacher_model.to(device)
-student_model = student_model.to(device)
+import argparse
 
 # Utility function for logit standardization
 def standardize_logits(logits):
@@ -181,13 +158,10 @@ def grid_search_distillation(teacher_model, base_student_model, train_subset, va
     return best_params
 
 # In main.py
-def train_student_with_distillation(teacher_model, student_model, dataset, num_epochs=10, alpha=0.5, initial_temperature=5.0, learning_rate=0.001, batch_size=32):
+def train_student_with_distillation(teacher_model, student_model, dataset, num_epochs=10, alpha=0.5, initial_temperature=5.0, learning_rate=0.001, batch_size=32, device="cuda"):
     # Prepare DataLoader
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-    # Load pretrained teacher model
-    teacher_checkpoint = torch.load('trained_models/best_yolov8l_cifar10.pth')
-    teacher_model.load_state_dict(teacher_checkpoint['model_state_dict'])
+    
     teacher_model.eval()
     
     criterion = DistillationLoss(alpha=alpha, temperature=initial_temperature)
@@ -226,61 +200,96 @@ def train_student_with_distillation(teacher_model, student_model, dataset, num_e
         scheduler.step(avg_loss)
         print(f"Epoch [{epoch + 1}/{num_epochs}], Average Loss: {avg_loss:.4f}")
         
-    # Save final distilled model
-    torch.save(student_model.state_dict(), "distilled_yolov8_student.pth")
-    print("Distilled Student Model Saved.")
+    # # Save final distilled model
+    # torch.save(student_model.state_dict(), "distilled_yolov8_student.pth")
+    # print("Distilled Student Model Saved.")
     return student_model
 
-# 4. Prepare CIFAR-10 Dataset and DataLoader
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),  # More reasonable size for classification
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', type=str, default='cifar10',
+                       choices=['cifar10', 'pets'])
+    args = parser.parse_args()
 
-# Download and load CIFAR-10 dataset
-train_dataset = datasets.CIFAR10(root="./data", train=True, download=True, transform=transform)
+    # Load dataset
+    train_dataset, test_dataset, num_classes = get_dataset(args.dataset)
+    
+    # Load and modify models for dataset
+    teacher_model = modify_model_for_dataset(YOLO("yolov8l-cls.pt").model, num_classes)
+    student_model = modify_model_for_dataset(YOLO("yolov8n-cls.pt").model, num_classes)
 
-# Prepare validation set
-dataset_size = len(train_dataset)
-train_size = int(0.8 * dataset_size)
-val_size = dataset_size - train_size
-train_subset, val_subset = torch.utils.data.random_split(
-    train_dataset, [train_size, val_size]
-)
+    # Load trained weights
+    teacher_checkpoint = torch.load(f'trained_models/best_yolov8l_{args.dataset}.pth')
+    student_checkpoint = torch.load(f'trained_models/best_yolov8n_{args.dataset}.pth')
+    
+    teacher_model.load_state_dict(teacher_checkpoint['model_state_dict'])
+    student_model.load_state_dict(student_checkpoint['model_state_dict'])
 
-# Perform grid search
-best_params = grid_search_distillation(
-    teacher_model, 
-    student_model,
-    train_subset,
-    val_subset,
-    device
-)
+    # Set model modes
+    teacher_model = teacher_model.eval()  # Teacher in eval mode
+    student_model = student_model.train()  # Student in training mode
 
-# Update training parameters with best found
-alpha = best_params['alpha']
-initial_temperature = best_params['initial_temperature']
-learning_rate = best_params['learning_rate']
-batch_size = best_params['batch_size']
+    # Move to device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    teacher_model = teacher_model.to(device)
+    student_model = student_model.to(device)
 
-# Execute training with best parameters
-train_student_with_distillation(
-    teacher_model=teacher_model,
-    student_model=student_model, 
-    dataset=train_dataset,
-    num_epochs=10,
-    alpha=alpha,
-    initial_temperature=initial_temperature,
-    batch_size=best_params['batch_size'],
-)
+    # 4. Prepare CIFAR-10 Dataset and DataLoader
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),  # More reasonable size for classification
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
 
-# # Execute Training
-# train_student_with_distillation(
-#     teacher_model=teacher_model,
-#     student_model=student_model, 
-#     dataloader=train_dataloader,
-#     num_epochs=10,
-#     alpha=0.5,
-#     initial_temperature=5.0
-# )
+    # Prepare validation set
+    dataset_size = len(train_dataset)
+    train_size = int(0.8 * dataset_size)
+    val_size = dataset_size - train_size
+    train_subset, val_subset = torch.utils.data.random_split(
+        train_dataset, [train_size, val_size]
+    )
+
+    # # Perform grid search
+    # best_params = grid_search_distillation(
+    #     teacher_model, 
+    #     student_model,
+    #     train_subset,
+    #     val_subset,
+    #     device
+    # )
+
+    # # Update training parameters with best found
+    # alpha = best_params['alpha']
+    # initial_temperature = best_params['initial_temperature']
+    # learning_rate = best_params['learning_rate']
+    # batch_size = best_params['batch_size']
+
+    # # Execute training with best parameters
+    # train_student_with_distillation(
+    #     teacher_model=teacher_model,
+    #     student_model=student_model, 
+    #     dataset=train_dataset,
+    #     num_epochs=10,
+    #     alpha=alpha,
+    #     initial_temperature=initial_temperature,
+    #     learning_rate=learning_rate,
+    #     batch_size=batch_size,
+    # )
+
+    # Execute Training
+    student_model = train_student_with_distillation(
+        teacher_model=teacher_model,
+        student_model=student_model, 
+        dataset=train_dataset,
+        num_epochs=10,
+        alpha=1,
+        initial_temperature=3.0,
+        learning_rate=0.001,
+        batch_size=32,
+    )
+
+    # Save final distilled model
+    torch.save(student_model.state_dict(), f'distilled_yolov8n_{args.dataset}.pth')
+
+if __name__ == "__main__":
+    main()

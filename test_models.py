@@ -8,14 +8,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix, classification_report
 import numpy as np
-from modify_and_train import modify_model_for_cifar10
+import argparse
+from modify_and_train import modify_model_for_dataset, get_dataset, get_num_classes
 
-def load_trained_model(model_type, device):
+def load_trained_model(model_type, dataset_name, device):
     """Load trained model from saved weights"""
     base_model = YOLO(f"yolov8{model_type}-cls.pt").model
-    model = modify_model_for_cifar10(base_model).to(device)
+    _, _, num_classes = get_dataset(dataset_name)
+    model = modify_model_for_dataset(base_model, num_classes).to(device)
     
-    checkpoint = torch.load(f'trained_models/best_yolov8{model_type}_cifar10.pth')
+    checkpoint = torch.load(f'trained_models/best_yolov8{model_type}_{dataset_name}.pth')
     model.load_state_dict(checkpoint['model_state_dict'])
     return model, checkpoint.get('val_acc', 0)
 
@@ -44,7 +46,10 @@ def evaluate_model(model, test_loader, device):
     }
 
 def plot_confusion_matrix(results, class_names, save_path='confusion_matrices.png'):
-    fig, axes = plt.subplots(1, 3, figsize=(24, 8))  # Changed to 3 columns
+    n_classes = len(class_names)
+    scale = 0.8*n_classes  # Scale for better readability
+    figsize = (3*scale, scale)
+    fig, axes = plt.subplots(1, 3, figsize=figsize)
     
     for idx, (name, result) in enumerate(results.items()):
         cm = confusion_matrix(result['targets'], result['predictions'])
@@ -53,51 +58,53 @@ def plot_confusion_matrix(results, class_names, save_path='confusion_matrices.pn
         axes[idx].set_title(f'{name} Confusion Matrix')
         axes[idx].set_xlabel('Predicted')
         axes[idx].set_ylabel('True')
+        if n_classes > 10:  # Rotate labels for better readability
+            plt.setp(axes[idx].get_xticklabels(), rotation=45, ha='right')
+            plt.setp(axes[idx].get_yticklabels(), rotation=45)
     
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
 
-def load_distilled_model(device):
+def load_distilled_model(dataset_name, device):
     """Load distilled model from saved weights"""
     base_model = YOLO("yolov8n-cls.pt").model
-    model = modify_model_for_cifar10(base_model).to(device)
+    model = modify_model_for_dataset(base_model, get_num_classes(dataset_name)).to(device)
     
-    checkpoint = torch.load('distilled_yolov8_student.pth')
+    checkpoint = torch.load(f'distilled_yolov8n_{dataset_name}.pth')
     model.load_state_dict(checkpoint)
     return model
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', type=str, default='cifar10',
+                       choices=['cifar10', 'pets'])
+    args = parser.parse_args()
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
-    # Prepare test data
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                           std=[0.229, 0.224, 0.225])
-    ])
-    
-    test_dataset = datasets.CIFAR10(
-        root="./data", train=False, download=True, transform=transform
-    )
+    # Load dataset
+    _, test_dataset, _ = get_dataset(args.dataset)
     test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
     
-    # Load trained models including distilled
+    # Load models
     models = {}
     for model_type in ['l', 'n']:  # large and nano
-        model, val_acc = load_trained_model(model_type, device)
+        model, val_acc = load_trained_model(model_type, args.dataset, device)
         models[f'YOLOv8{"Large" if model_type == "l" else "Nano"}'] = model
         print(f"Loaded YOLOv8{model_type} (Validation Accuracy: {val_acc:.2f}%)")
     
     # Load distilled model
-    print("\nLoading distilled model...")
-    distilled_model = load_distilled_model(device)
+    distilled_model = load_distilled_model(args.dataset, device)
     models['Distilled-Nano'] = distilled_model
+    print("Loaded Distilled Nano")
     
-    # Evaluate all models
+    # Evaluate models
     results = {}
+    class_names = (test_dataset.classes if hasattr(test_dataset, 'classes') 
+                  else [str(i) for i in range(len(set(test_dataset.targets)))])
+    
     for name, model in models.items():
         print(f"\nEvaluating {name}...")
         result = evaluate_model(model, test_loader, device)
@@ -110,12 +117,13 @@ def main():
         print(classification_report(
             result['targets'],
             result['predictions'],
-            target_names=test_dataset.classes
+            target_names=class_names
         ))
     
-    # Plot confusion matrices for all three models
-    plot_confusion_matrix(results, test_dataset.classes)
-    print("\nResults saved to confusion_matrices.png")
+    # Plot confusion matrices
+    save_path = f'confusion_matrices_{args.dataset}.png'
+    plot_confusion_matrix(results, class_names, save_path)
+    print(f"\nResults saved to {save_path}")
 
 if __name__ == "__main__":
     main()
